@@ -99,6 +99,7 @@ object Recursion {
   }
 
   // 1245 -> "one-two-four-five"
+  // homework: fix this. if we run the program in sbt it will output "-one-two-three-four-five-zero" for 123450
   def wordNumber(i: Int): String = {
     // digits(i).map(digitToWord).mkString("-")
     def loop(list: List[Int], acc: String): String = {
@@ -114,13 +115,30 @@ object Recursion {
   }
 
 
-//  def fib(n: Int): Int = {
-//    @tailrec
-//    def go(i: Int, prev: Int, cur: Int): Int = {
-//      if (i <= 0) prev
-//      else go(i - 1, cur, prev + cur)
-//    }
-//
-//    go(n, 0, 1)
-//  }
+}
+
+object MoreRecursion {
+
+  // implement unimplemented methods of MyIntList using recursion
+  trait MyIntList { self =>
+    def map[B](f: Int => Int): MyIntList = ???
+    def filter(f: Int => Boolean): MyIntList = ???
+    def length: Int = ???
+    def reverse: MyIntList = ???
+    def take(n: Int): MyIntList = ???
+    def drop(n: Int): MyIntList = ???
+    def takeWhile(p: Int => Boolean): MyIntList = ???
+    def dropWhile(p: Int => Boolean): MyIntList = ???
+    def +:(a: Int): MyIntList = Cons(a, self)
+  }
+
+  case object Empty extends MyIntList
+  final case class Cons(head: Int, tail: MyIntList) extends MyIntList
+
+  val oneElementList = 3 +: Empty
+  val twoElementList = 10 +: oneElementList
+
+  val mappedList = twoElementList.map(_ + 1)
+  val filteredList = mappedList.filter(_ > 10)
+
 }

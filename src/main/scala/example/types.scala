@@ -1,5 +1,6 @@
 package example
 
+// borrowed from https://github.com/jdegoes/functional-scala
 object types {
   type ??? = Nothing
 

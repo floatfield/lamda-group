@@ -124,23 +124,21 @@ object Recursion {
 
 object MoreRecursion {
   // implement unimplemented methods of MyIntList using recursion
-  trait MyIntList { self =>
-    def map(f: Int => Int): MyIntList = ???
-    def filter(f: Int => Boolean): MyIntList = ???
+  sealed trait MyList[A] { self =>
+    def map[B](f: A => B): MyList[B] = ???
+    def filter(predicate: A => Boolean): MyList[A] = ???
     def length: Int = ???
-    def reverse: MyIntList = ???
-
-    /** Selects the first n elements */
-    def take(n: Int): MyIntList = ???
-
-    /** Selects all elements except first n ones */
-    def drop(n: Int): MyIntList = ???
-    def takeWhile(p: Int => Boolean): MyIntList = ???
-    def dropWhile(p: Int => Boolean): MyIntList = ???
-
-    /** prepend */
-    def +:(a: Int): MyIntList = Cons(a, self)
+    def reverse: MyList[A] = ???
+    def take(n: Int): MyList[A] = ???
+    def drop(n: Int): MyList[A] = ???
+    def takeWhile(p: A => Boolean): MyList[A] = ???
+    def dropWhile(p: A => Boolean): MyList[A] = ???
+    def +:(a: A): MyList[A] = Cons(a, self)
   }
+
+  final case class Empty[A]() extends MyList[A]
+  final case class Cons[A](head: A, tail: MyList[A]) extends MyList[A]
+
 
   case object Empty extends MyIntList { self =>
     override def map(f: Int => Int): MyIntList = Empty
@@ -283,8 +281,15 @@ object MoreRecursion {
     }
   }
 
-  val oneElementList = 3 +: Empty
-  val twoElementList = 10 +: oneElementList
+  val l1 = List(1,2,3)
+  l1.map(x => x ) // List("1", "2", "3")
+
+  // List(1,2,3) ---> Cons(1, Cons(2, Cons(3, Empty)))
+  // List(3) --> Cons(3, Empty)
+  // List(2, 3) --> Cons(2, Cons(3, Empty))
+
+  val oneElementList = 3 +: Empty[Int] // Empty.+:(3) --> Cons(3, Empty)
+  val twoElementList = 10 +: oneElementList // Cons(3, Empty).+:(10) --> Cons(10, Cons(3, Empty))
 
   val mappedList = twoElementList.map(_ + 1)
   val filteredList = mappedList.filter(_ > 10)

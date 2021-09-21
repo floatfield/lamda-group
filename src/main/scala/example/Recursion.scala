@@ -101,7 +101,7 @@ object Recursion {
   // 1245 -> "one-two-four-five"
   // homework: fix this. if we run the program in sbt it will output "-one-two-three-four-five-zero" for 123450
   def wordNumber(i: Int): String = {
-    // digits(i).map(digitToWord).mkString("-")
+
     def loop(list: List[Int], acc: String): String = {
       list.headOption match {
         case None => acc
@@ -110,10 +110,9 @@ object Recursion {
           loop(list.tail, newAcc)
       }
     }
-
     loop(digits(i), "")
+    digits(i).map(digitToWord).mkString("", "-", "")
   }
-
 
 }
 

@@ -9,21 +9,22 @@ object types {
   //
   // List all values of the type `Boolean`.
   //
-  val BoolValues: Set[Boolean] = ???
+  val BoolValues: Set[Boolean] = Set(true, false)
 
   //
   // EXERCISE 2
   //
   // List all values of the type `Unit`.
   //
-  val UnitValues: Set[Unit] = ???
+  val UnitValues: Set[Unit] = Set(println("djd"), printf("QWERTY"))
 
   //
   // EXERCISE 3
   //
   // List all values of the type `Nothing`.
   //
-  val NothingValues: Set[Nothing] = ???
+  val NothingValues: Set[Nothing] =
+    Set(2, "test", true, false, 71261526323L, 0.3f, 0.2, 'C', println("test"))
 
   //
   // EXERCISE 4
@@ -38,14 +39,15 @@ object types {
   // List all values of the type `(Boolean, Boolean)`.
   //
   val TupleBoolBoolValues: Set[(Boolean, Boolean)] =
-  ???
+    Set((true, true), (true, false), (false, true), (false, false))
 
   //
   // EXERCISE 6
   //
   // List all values of the type `Either[Either[Unit, Unit], Unit]`.
   //
-  val EitherEitherUnitUnitUnitValues: Set[Either[Either[Unit, Unit], Unit]] = ???
+  val EitherEitherUnitUnitUnitValues: Set[Either[Either[Unit, Unit], Unit]] =
+    ???
 
   //
   // EXERCISE 7
@@ -84,7 +86,7 @@ object types {
   // Prove that `A * 1` is equivalent to `A` by implementing the following two
   // functions.
   //
-  def to1[A](t: (A, Unit)): A   = ???
+  def to1[A](t: (A, Unit)): A = ???
   def from1[A](a: A): (A, Unit) = ???
 
   //
@@ -93,7 +95,7 @@ object types {
   // Prove that `A * 0` is equivalent to `0` by implementing the following two
   // functions.
   //
-  def to2[A](t: (A, Nothing)): Nothing   = ???
+  def to2[A](t: (A, Nothing)): Nothing = ???
   def from2[A](n: Nothing): (A, Nothing) = ???
 
   //
@@ -111,7 +113,7 @@ object types {
   // Prove that `A + 0` is equivalent to `A` by implementing the following two
   // functions in a way that loses no information.
   //
-  def to3[A](t: Either[A, Nothing]): A   = ???
+  def to3[A](t: Either[A, Nothing]): A = ???
   def from3[A](a: A): Either[A, Nothing] = ???
 
   //
@@ -166,7 +168,12 @@ object types {
   // construct a `BankAccount` with an illegal (undefined) state in the
   // business domain. Note any limitations in your solution.
   //
-  final case class BankAccount(ownerId: String, balance: BigDecimal, accountType: String, openedDate: Long)
+  final case class BankAccount(
+      ownerId: String,
+      balance: BigDecimal,
+      accountType: String,
+      openedDate: Long
+  )
 
   //
   // EXERCISE 20

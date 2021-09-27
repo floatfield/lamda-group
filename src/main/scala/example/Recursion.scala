@@ -25,8 +25,8 @@ object Recursion {
 
     loop(b, 0)
 
-//    if (b == 1) a
-//    else a + multiply(a, b - 1)
+    //    if (b == 1) a
+    //    else a + multiply(a, b - 1)
   }
 
   // 3. integral division
@@ -42,7 +42,7 @@ object Recursion {
         extends DividedByResult
     case object DividedByZero extends DividedByResult
   }
-  // 10 `dividedBy` 5 = (2, 0)
+  // 10 dividedBy 5 = (2, 0)
   def dividedBy(num: Int, demon: Int): DividedByResult = {
     def loop(x: Int, acc: Int): (Int, Int) = {
       if (x < demon) (acc, x)
@@ -55,9 +55,9 @@ object Recursion {
 
   val x: DividedByResult = dividedBy(10, 0)
 
-//  val dig: PartialFunction[Int, String] = {
-//    case
-//  }
+  //  val dig: PartialFunction[Int, String] = {
+  //    case
+  //  }
   //4. numbers into words
   def digitToWord(i: Int): String = i match {
     case 0 => "zero"
@@ -85,8 +85,8 @@ object Recursion {
   // 1
   //
 
-//  val list = List(1, 2)
-//  val l2 = 3 +: list :+ 4
+  //  val list = List(1, 2)
+  //  val l2 = 3 +: list :+ 4
 
   // 1234 -> List(1, 2, 3, 4)
   def digits(i: Int): List[Int] = {
@@ -101,7 +101,7 @@ object Recursion {
   // 1245 -> "one-two-four-five"
   // homework: fix this. if we run the program in sbt it will output "-one-two-three-four-five-zero" for 123450
   def wordNumber(i: Int): String = {
-    // digits(i).map(digitToWord).mkString("-")
+
     def loop(list: List[Int], acc: String): String = {
       list.headOption match {
         case None => acc
@@ -110,10 +110,9 @@ object Recursion {
           loop(list.tail, newAcc)
       }
     }
-
     loop(digits(i), "")
+    digits(i).map(digitToWord).mkString("", "-", "")
   }
-
 
 }
 
@@ -121,12 +120,51 @@ object MoreRecursion {
 
   // implement unimplemented methods of MyIntList using recursion
   trait MyIntList { self =>
-    def map[B](f: Int => Int): MyIntList = ???
+    def map(f: Int => Int): MyIntList = ???
     def filter(f: Int => Boolean): MyIntList = ???
-    def length: Int = ???
-    def reverse: MyIntList = ???
-    def take(n: Int): MyIntList = ???
-    def drop(n: Int): MyIntList = ???
+
+    def length: Int = {
+      def loop(l: MyIntList, acc: Int): Int = l match {
+        case Empty         => acc
+        case Cons(_, tail) => loop(tail, acc + 1)
+      }
+
+      loop(self, 0)
+    }
+
+    def reverse: MyIntList = {
+      @tailrec
+      def loop(l: MyIntList, acc: MyIntList): MyIntList = l match {
+        case Empty            => acc
+        case Cons(head, tail) => loop(tail, head +: acc)
+      }
+      loop(self, Empty)
+    }
+
+    def take(n: Int): MyIntList = { //взять первые n элементов
+      @tailrec
+      def loop(l: MyIntList, i: Int, acc: MyIntList): MyIntList = l match {
+        case Empty => acc
+        case Cons(head, tail) => {
+          if (i < n) loop(tail, i + 1, head +: acc)
+          else acc
+        }
+      }
+      loop(self, n, Empty).reverse
+    }
+
+    def drop(n: Int): MyIntList = { //удалить первые n элементов
+      @tailrec
+      def loop(l: MyIntList, i: Int): MyIntList = l match {
+        case Empty => Empty // чот не понимаю ок это или нет
+        case Cons(head, tail) => {
+          if (i == n) tail
+          else loop(tail, i + 1)
+        }
+      }
+      loop(self, n)
+    }
+
     def takeWhile(p: Int => Boolean): MyIntList = ???
     def dropWhile(p: Int => Boolean): MyIntList = ???
     def +:(a: Int): MyIntList = Cons(a, self)

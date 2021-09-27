@@ -23,14 +23,32 @@ object types {
   //
   // List all values of the type `Nothing`.
   //
-  val NothingValues: Set[Nothing] = ???
+  val NothingValues: Set[Nothing] = Set()
+
+//  def foo[A](x: A): Nothing = ???
 
   //
   // EXERCISE 4
   //
   // List all values of the type `Either[Unit, Boolean]`.
   //
-  val EitherUnitBoolValues: Set[Either[Unit, Boolean]] = ???
+//  trait Either[A, B]
+//  final case class Left[B](a: B) extends Either[Nothing, B]
+//  final case class Right[A](a: A) extends Either[A, Nothing]
+
+  val EitherUnitBoolValues: Set[Either[Unit, Boolean]] = Set(Left(()), Right(true), Right(false))
+
+//  def foo(x: Int): Either[Throwable, Int] = {
+//    if (x < 3) Left(new Exception("asdasdas"))
+//    else Right(x)
+//  }
+//
+//  val res: Either[Throwable, Int] = foo(2)
+//  res match {
+//    case Left(xx) => ???
+//    case Right(x) => ???
+//  }
+//  val x: Either[Throwable, Int] = res.map(_ + 2)
 
   //
   // EXERCISE 5

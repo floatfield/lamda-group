@@ -10,7 +10,7 @@ object Hello extends App {
   println(Recursion.wordNumber(Int.MaxValue))
   println("---------------------")
 
-  MoreRecursion.print()
+  MoreRecursion.test()
 
   def greeting() = "hello"
 }

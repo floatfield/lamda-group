@@ -123,208 +123,162 @@ object Recursion {
 }
 
 object MoreRecursion {
-  // implement unimplemented methods of MyIntList using recursion
+  // implement unimplemented methods of MyList[A] using recursion
   sealed trait MyList[A] { self =>
-    def map[B](f: A => B): MyList[B] = ???
-    def filter(predicate: A => Boolean): MyList[A] = ???
-    def length: Int = ???
-    def reverse: MyList[A] = ???
-    def take(n: Int): MyList[A] = ???
-    def drop(n: Int): MyList[A] = ???
-    def takeWhile(p: A => Boolean): MyList[A] = ???
-    def dropWhile(p: A => Boolean): MyList[A] = ???
-    def +:(a: A): MyList[A] = Cons(a, self)
-  }
 
-  final case class Empty[A]() extends MyList[A]
-  final case class Cons[A](head: A, tail: MyList[A]) extends MyList[A]
-
-
-  case object Empty extends MyIntList { self =>
-    override def map(f: Int => Int): MyIntList = Empty
-    override def filter(f: Int => Boolean): MyIntList = Empty
-    override def length: Int = 0
-    override def reverse: MyIntList = Empty
-    override def take(n: Int): MyIntList = Empty
-    override def drop(n: Int): MyIntList = Empty
-    override def takeWhile(p: Int => Boolean): MyIntList = Empty
-    override def dropWhile(p: Int => Boolean): MyIntList = Empty
-  }
-
-  final case class Cons(head: Int, tail: MyIntList) extends MyIntList { self =>
-    override def map(f: Int => Int): MyIntList = {
+    def map[B](f: A => B): MyList[B] = {
       @tailrec
-      def loop(in: MyIntList, acc: MyIntList): MyIntList = {
-        in match {
-          case Empty      => acc
+      def loop(input: MyList[A], acc: MyList[B]): MyList[B] = {
+        input match {
+          case Empty()    => acc
           case Cons(h, t) => loop(t, f(h) +: acc)
         }
       }
 
-      loop(self, Empty).reverse
+      loop(self, Empty()).reverse
+
     }
 
-    override def filter(f: Int => Boolean): MyIntList = {
+    def filter(predicate: A => Boolean): MyList[A] = {
       @tailrec
-      def loop(in: MyIntList, acc: MyIntList): MyIntList = {
-        in match {
-          case Empty => acc
-          case Cons(h, t) => {
-            if (f(h)) loop(t, h +: acc)
-            else loop(t, acc)
-          }
+      def loop(input: MyList[A], acc: MyList[A]): MyList[A] = {
+        input match {
+          case Empty()                    => acc
+          case Cons(h, t) if predicate(h) => loop(t, h +: acc)
+          case Cons(_, t)                 => loop(t, acc)
         }
       }
 
-      loop(self, Empty).reverse
+      loop(self, Empty()).reverse
     }
 
-    override def length: Int = {
+    def length: Int = {
       @tailrec
-      def loop(n: Int, acc: MyIntList): Int = {
-        acc match {
-          case Empty      => n
-          case Cons(h, t) => loop(n + 1, t)
+      def loop(input: MyList[A], n: Int): Int = {
+        input match {
+          case Empty()    => n
+          case Cons(_, t) => loop(t, n + 1)
+        }
+      }
+
+      loop(self, 0)
+    }
+
+    def reverse: MyList[A] = {
+      @tailrec
+      def loop(input: MyList[A], acc: MyList[A]): MyList[A] = {
+        input match {
+          case Empty()    => acc
+          case Cons(h, t) => loop(t, h +: acc)
+        }
+      }
+
+      loop(self, Empty())
+    }
+
+    def take(n: Int): MyList[A] = {
+      @tailrec
+      def loop(i: Int, input: MyList[A], acc: MyList[A]): MyList[A] = {
+        input match {
+          case Empty()             => acc
+          case Cons(h, t) if i < n => loop(i + 1, t, h +: acc)
+          case Cons(_, _)          => acc
+        }
+      }
+
+      loop(0, self, Empty()).reverse
+    }
+
+    def drop(n: Int): MyList[A] = {
+      @tailrec
+      def loop(i: Int, input: MyList[A]): MyList[A] = {
+        input match {
+          case Empty()             => Empty()
+          case Cons(_, t) if i < n => loop(i + 1, t)
+          case Cons(_, t)          => input
         }
       }
 
       loop(0, self)
     }
 
-    override def reverse: MyIntList = {
+    def takeWhile(p: A => Boolean): MyList[A] = {
       @tailrec
-      def loop(in: MyIntList, acc: MyIntList): MyIntList = {
-        in match {
-          case Empty      => acc
-          case Cons(h, t) => loop(t, h +: acc)
+      def loop(input: MyList[A], acc: MyList[A]): MyList[A] = {
+        input match {
+          case Empty()            => acc
+          case Cons(h, t) if p(h) => loop(t, h +: acc)
+          case Cons(_, _)         => acc
         }
       }
 
-      loop(self, Empty)
+      loop(self, Empty()).reverse
     }
 
-    override def take(n: Int): MyIntList = {
+    def dropWhile(p: A => Boolean): MyList[A] = {
       @tailrec
-      def loop(i: Int, in: MyIntList, acc: MyIntList): MyIntList = {
-        in match {
-          case Empty => acc
-          case Cons(h, t) => {
-            if (i < n) loop(i + 1, t, h +: acc)
-            else acc
-          }
+      def loop(input: MyList[A]): MyList[A] = {
+        input match {
+          case Empty()            => Empty()
+          case Cons(h, t) if p(h) => loop(t)
+          case Cons(h, t)         => input
         }
       }
 
-      loop(0, self, Empty).reverse
+      loop(self)
     }
 
-    override def drop(n: Int): MyIntList = {
-      @tailrec
-      def loop(i: Int, in: MyIntList, acc: MyIntList): MyIntList = {
-        in match {
-          case Empty => acc
-          case Cons(h, t) => {
-            if (i < n) loop(i + 1, t, acc)
-            else loop(i + 1, t, h +: acc)
-          }
-        }
-      }
-
-      loop(0, self, Empty).reverse
-    }
-
-    override def takeWhile(p: Int => Boolean): MyIntList = {
-      @tailrec
-      def loop(in: MyIntList, acc: MyIntList): MyIntList = {
-        in match {
-          case Empty => acc
-          case Cons(h, t) => {
-            if (p(h)) loop(t, h +: acc)
-            else loop(t, acc)
-          }
-        }
-      }
-
-      loop(self, Empty).reverse
-    }
-
-    override def dropWhile(p: Int => Boolean): MyIntList = {
-      @tailrec
-      def loop(in: MyIntList, acc: MyIntList): MyIntList = {
-        in match {
-          case Empty => acc
-          case Cons(h, t) => {
-            if (p(h)) loop(t, acc)
-            else h +: t
-          }
-        }
-      }
-
-      loop(self, Empty)
-    }
+    def +:(a: A): MyList[A] = Cons(a, self)
 
     override def toString: String = {
       @tailrec
-      def loop(in: MyIntList, acc: String): String = {
-        in match {
-          case Empty => acc
-          case Cons(h, t) => {
-            t match {
-              case Empty      => loop(t, acc + h + "]")
-              case Cons(_, _) => loop(t, acc + h + ",")
-            }
-          }
+      def loop(input: MyList[A], acc: String): String = {
+        input match {
+          case Empty()    => acc + "]"
+          case Cons(h, t) => loop(t, acc + "," + h)
         }
       }
 
-      loop(self, "[")
+      self match {
+        case Empty()          => "[]"
+        case Cons(head, tail) => loop(tail, "[" + head)
+      }
     }
   }
 
-  val l1 = List(1,2,3)
-  l1.map(x => x ) // List("1", "2", "3")
+  final case class Empty[A]() extends MyList[A]
+  final case class Cons[A](head: A, tail: MyList[A]) extends MyList[A]
 
-  // List(1,2,3) ---> Cons(1, Cons(2, Cons(3, Empty)))
-  // List(3) --> Cons(3, Empty)
-  // List(2, 3) --> Cons(2, Cons(3, Empty))
+  def test(): Unit = {
+    val oneElementList = 3 +: Empty[Int]() // Empty.+:(3) --> Cons(3, Empty())
+    val twoElementList =
+      10 +: oneElementList // Cons(3, Empty()).+:(10) --> Cons(10, Cons(3, Empty()))
 
-  val oneElementList = 3 +: Empty[Int] // Empty.+:(3) --> Cons(3, Empty)
-  val twoElementList = 10 +: oneElementList // Cons(3, Empty).+:(10) --> Cons(10, Cons(3, Empty))
+    val mappedList = twoElementList.map(_ + 1)
+    val filteredList = mappedList.filter(_ > 10)
 
-  val mappedList = twoElementList.map(_ + 1)
-  val filteredList = mappedList.filter(_ > 10)
+    def getBigList(size: Int): MyList[Int] = {
+      @tailrec
+      def loop(i: Int, acc: MyList[Int]): MyList[Int] = {
+        if (i >= size) acc
+        else loop(i + 1, scala.util.Random.nextInt(14) +: acc)
+      }
 
-  var longerList = 100 +: oneElementList
-  longerList = 101 +: longerList
-  longerList = 102 +: longerList
-  longerList = 103 +: longerList
-  longerList = 104 +: longerList
-  longerList = 105 +: longerList
-
-  def getBigList(size: Int): MyIntList = {
-    @tailrec
-    def loop(i: Int, acc: MyIntList): MyIntList = {
-      if (i >= size) acc
-      else loop(i + 1, i +: acc)
+      loop(0, Empty()).reverse
     }
 
-    loop(0, Empty).reverse
-  }
+    val bigListDamn = getBigList(15)
 
-  val bigListDamn = getBigList(100)
-
-  def print(): Unit = {
-    println(s"oneElementList = ${oneElementList}")
-    println(s"twoElementList = ${twoElementList}")
-    println(s"mappedList + 1 = ${mappedList}")
-    println(s"filteredList > 10 = ${filteredList}")
-    println(s"filteredLongerList > 10 = ${longerList.filter(_ > 1)}")
-    println(s"bigListDamn > 10 = ${bigListDamn}")
+    println(s"oneElementList = $oneElementList")
+    println(s"twoElementList = $twoElementList")
+    println(s"mappedList + 1 = $mappedList")
+    println(s"filteredList > 10 = $filteredList")
+    println(s"bigListDamn = $bigListDamn")
+    println(s"bigListDamn.length = ${bigListDamn.length}")
+    println(s"bigListDamn.filter(_ > 7) = ${bigListDamn.filter(_ > 7)}")
     println(s"bigListDamn.take(10) = ${bigListDamn.take(10)}")
     println(s"bigListDamn.drop(10) = ${bigListDamn.drop(10)}")
     println(s"bigListDamn.dropWhile(_ < 7) = ${bigListDamn.dropWhile(_ < 7)}")
     println(s"bigListDamn.takeWhile(_ < 7) = ${bigListDamn.takeWhile(_ < 7)}")
-
   }
-
 }

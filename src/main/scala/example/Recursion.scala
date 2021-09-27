@@ -120,8 +120,27 @@ object MoreRecursion {
 
   // implement unimplemented methods of MyIntList using recursion
   trait MyIntList { self =>
-    def map(f: Int => Int): MyIntList = ???
-    def filter(f: Int => Boolean): MyIntList = ???
+    def map(f: Int => Int): MyIntList = {
+      def loop(l: MyIntList, acc: MyIntList): MyIntList = l match {
+        case Empty => Empty
+        case Cons(head, tail) =>
+          loop(tail, f(head) +: acc) // а тут нельзя так head.f ?
+      }
+
+      loop(self, Empty).reverse
+    }
+    def filter(f: Int => Boolean): MyIntList = {
+      def loop(l: MyIntList, acc: MyIntList): MyIntList = {
+        l match {
+          case Empty => acc
+          case Cons(head, tail) => {
+            if (f(head)) loop(tail, head +: acc)
+            else loop(tail, acc)
+          }
+        }
+      }
+      loop(self, Empty).reverse
+    }
 
     def length: Int = {
       def loop(l: MyIntList, acc: Int): Int = l match {
@@ -166,6 +185,19 @@ object MoreRecursion {
     }
 
     def takeWhile(p: Int => Boolean): MyIntList = ???
+    // тоже самое что фильтр?
+//    def filter(f: Int => Boolean): MyIntList = {
+//      def loop(l: MyIntList, acc: MyIntList): MyIntList = {
+//        l match {
+//          case Empty => acc
+//          case Cons(head, tail) => {
+//            if (f(head)) loop(tail, head +: acc)
+//            else loop(tail, acc)
+//          }
+//        }
+//      }
+//      loop(self, Empty).reverse
+//    }
     def dropWhile(p: Int => Boolean): MyIntList = ???
     def +:(a: Int): MyIntList = Cons(a, self)
   }

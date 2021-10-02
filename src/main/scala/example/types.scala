@@ -93,8 +93,8 @@ object types {
   // Create a product type of `Int` and `String`, representing the age and
   // name of a person.
   //
-  type Person1 = ???
-  final case class Person2( /*  */ )
+  type Person1 = (String, Int)
+  final case class Person2(name: String, age: Int)
 
   //
   // EXERCISE 10
@@ -102,8 +102,8 @@ object types {
   // Prove that `A * 1` is equivalent to `A` by implementing the following two
   // functions.
   //
-  def to1[A](t: (A, Unit)): A   = ???
-  def from1[A](a: A): (A, Unit) = ???
+  def to1[A](t: (A, Unit)): A   = t._1
+  def from1[A](a: A): (A, Unit) = (a, ())
 
   //
   // EXERCISE 11
@@ -111,8 +111,8 @@ object types {
   // Prove that `A * 0` is equivalent to `0` by implementing the following two
   // functions.
   //
-  def to2[A](t: (A, Nothing)): Nothing   = ???
-  def from2[A](n: Nothing): (A, Nothing) = ???
+  def to2[A](t: (A, Nothing)): Nothing   = t._2
+  def from2[A](n: Nothing): (A, Nothing) = throw new NotImplementedError
 
   //
   // EXERCISE 12
@@ -120,9 +120,10 @@ object types {
   // Create a sum type of `Int` and `String` representing the identifier of
   // a robot (a number) or the identifier of a person (a name).
   //
-  type Identifier1 = ???
+  type Identifier1 = Either[Int, String]
   sealed trait Identifier2
-
+  case class Robo(a: Int) extends Identifier2
+  case class Hobo(b: String) extends Identifier2
   //
   // EXERCISE 13
   //

@@ -42,12 +42,14 @@ object adt {
   val zoo: Zoo[Int, Boolean, Unit] = Zoo(3, Bar(true))
   
   final case class Quux[A, B](a: A, b: B)
+
 //  def toQuux[A, B](a: (A, B)): Quux[A, B] = Quux(a._1, a._2)
 //  def fromQuux[A, B](q: Quux[A, B]): (A, B) = (q.a, q.b)
 //  
 //  def toQuuxE[A, B](e: Either[A, B]): Quux[A, B] = e match {
 //    case Left(l) => ???
 //    case Right(r) => ???
+
 //  }
 //  def fromQuuxE[A, B](q: Quux[A, B]): Either[A, B] = ???
   

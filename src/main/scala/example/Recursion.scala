@@ -228,6 +228,42 @@ object MoreRecursion {
       loop(self)
     }
 
+    def setHead(h: A): MyList[A] = {
+      self match {
+        case Cons(_, tail) => Cons(h, tail)
+        case Empty()       => Cons(h, Empty())
+      }
+    }
+
+    // from book
+    def append(a1: MyList[A], a2: MyList[A]): MyList[A] =
+      a1 match {
+        case Empty()    => a2
+        case Cons(h, t) => Cons(h, append(t, a2))
+      }
+
+    def push(a: A): MyList[A] =
+      self match {
+        case Empty()    => Cons(a, Empty())
+        case Cons(h, t) => Cons(h, t.push(a))
+      }
+
+    def init(): MyList[A] = {
+      @tailrec
+      def loop(acc: MyList[A], l: MyList[A]): MyList[A] = {
+        l match {
+          case Empty() => acc
+          case Cons(head, tail) =>
+            tail match {
+              case Cons(_, _) => loop(acc.push(head), tail)
+              case _          => acc
+            }
+        }
+      }
+
+      loop(Empty(), self)
+    }
+
     def +:(a: A): MyList[A] = Cons(a, self)
 
     override def toString: String = {
@@ -247,7 +283,7 @@ object MoreRecursion {
   }
 
   final case class Empty[A]() extends MyList[A]
-  final case class Cons[A](head: A, tail: MyList[A]) extends MyList[A]
+  final case class Cons[A](head: A, tail: MyList[A]) extends MyList[A] {}
 
   def test(): Unit = {
     val oneElementList = 3 +: Empty[Int]() // Empty.+:(3) --> Cons(3, Empty())
@@ -280,5 +316,6 @@ object MoreRecursion {
     println(s"bigListDamn.drop(10) = ${bigListDamn.drop(10)}")
     println(s"bigListDamn.dropWhile(_ < 7) = ${bigListDamn.dropWhile(_ < 7)}")
     println(s"bigListDamn.takeWhile(_ < 7) = ${bigListDamn.takeWhile(_ < 7)}")
+    println(s"bigListDamn.init() = ${bigListDamn.init()}")
   }
 }

@@ -9,28 +9,29 @@ object types {
   //
   // List all values of the type `Boolean`.
   //
-  val BoolValues: Set[Boolean] = ???
+  val BoolValues: Set[Boolean] = Set(true, false)
 
   //
   // EXERCISE 2
   //
   // List all values of the type `Unit`.
   //
-  val UnitValues: Set[Unit] = ???
+  val UnitValues: Set[Unit] = Set(())
 
   //
   // EXERCISE 3
   //
   // List all values of the type `Nothing`.
   //
-  val NothingValues: Set[Nothing] = ???
+  val NothingValues: Set[Nothing] = Set()
 
   //
   // EXERCISE 4
   //
   // List all values of the type `Either[Unit, Boolean]`.
   //
-  val EitherUnitBoolValues: Set[Either[Unit, Boolean]] = ???
+  val EitherUnitBoolValues: Set[Either[Unit, Boolean]] =
+    Set(Left(()), Right(true), Right(false))
 
   //
   // EXERCISE 5
@@ -38,14 +39,15 @@ object types {
   // List all values of the type `(Boolean, Boolean)`.
   //
   val TupleBoolBoolValues: Set[(Boolean, Boolean)] =
-  ???
+    Set((true, false), (true, true), (false, false), (false, true))
 
   //
   // EXERCISE 6
   //
   // List all values of the type `Either[Either[Unit, Unit], Unit]`.
   //
-  val EitherEitherUnitUnitUnitValues: Set[Either[Either[Unit, Unit], Unit]] = ???
+  val EitherEitherUnitUnitUnitValues: Set[Either[Either[Unit, Unit], Unit]] =
+    Set(Left(Left()), Left(Right(())), Right(()))
 
   //
   // EXERCISE 7
@@ -56,7 +58,14 @@ object types {
   //
   // List all the elements in `A * B`.
   //
-  val AProductB: Set[(Boolean, String)] = ???
+  val AProductB: Set[(Boolean, String)] = Set(
+    (true, "red"),
+    (true, "green"),
+    (true, "blue"),
+    (false, "red"),
+    (false, "green"),
+    (false, "blue")
+  )
 
   //
   // EXERCISE 8
@@ -67,7 +76,13 @@ object types {
   //
   // List all the elements in `A + B`.
   //
-  val ASumB: Set[Either[Boolean, String]] = ???
+  val ASumB: Set[Either[Boolean, String]] = Set(
+    Left(true),
+    Left(false),
+    Right("red"),
+    Right("green"),
+    Right("blue")
+  )
 
   //
   // EXERCISE 9
@@ -84,7 +99,7 @@ object types {
   // Prove that `A * 1` is equivalent to `A` by implementing the following two
   // functions.
   //
-  def to1[A](t: (A, Unit)): A   = t._1
+  def to1[A](t: (A, Unit)): A = t._1
   def from1[A](a: A): (A, Unit) = (a, ())
 
   //
@@ -93,7 +108,7 @@ object types {
   // Prove that `A * 0` is equivalent to `0` by implementing the following two
   // functions.
   //
-  def to2[A](t: (A, Nothing)): Nothing   = t._2
+  def to2[A](t: (A, Nothing)): Nothing = t._2
   def from2[A](n: Nothing): (A, Nothing) = throw new NotImplementedError
 
   //
@@ -112,8 +127,10 @@ object types {
   // Prove that `A + 0` is equivalent to `A` by implementing the following two
   // functions in a way that loses no information.
   //
-  def to3[A](t: Either[A, Nothing]): A   = ???
-  def from3[A](a: A): Either[A, Nothing] = ???
+  def to3[A](t: Either[A, Nothing]): A = t match {
+    case Left(value) => value
+  }
+  def from3[A](a: A): Either[A, Nothing] = Left(a)
 
   //
   // EXERCISE 14
@@ -121,7 +138,8 @@ object types {
   // Create either a sum type or a product type (as appropriate) to represent a
   // credit card, which has a number, an expiration date, and a security code.
   //
-  type CreditCard = ???
+  type CreditCard = (Long, String, Int)
+  case class CreditCard2(cardNumber: Long, expDate: String, securityCode: Int)
 
   //
   // EXERCISE 15
@@ -130,7 +148,11 @@ object types {
   // payment method, which could be a credit card, bank account, or
   // cryptocurrency.
   //
-  type PaymentMethod = ???
+  //  type PaymentMethod = Either[CreditCard, BankAccount] ???
+  sealed trait PaymentMethod
+  final case class CreditCard3() extends PaymentMethod
+  final case class BankAccount2() extends PaymentMethod
+  final case class Cryptocurrency() extends PaymentMethod
 
   //
   // EXERCISE 16
@@ -167,7 +189,12 @@ object types {
   // construct a `BankAccount` with an illegal (undefined) state in the
   // business domain. Note any limitations in your solution.
   //
-  final case class BankAccount(ownerId: String, balance: BigDecimal, accountType: String, openedDate: Long)
+  final case class BankAccount(
+      ownerId: String,
+      balance: BigDecimal,
+      accountType: String,
+      openedDate: Long
+  )
 
   //
   // EXERCISE 20

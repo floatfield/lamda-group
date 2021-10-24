@@ -1,5 +1,8 @@
 package example
 
+import java.util.concurrent.atomic.DoubleAdder
+import scala.annotation.tailrec
+
 // implement missing function implementations
 object Functions {
 
@@ -32,7 +35,7 @@ object Functions {
       case Leaf(label)       => Leaf(f(label))
       case Node(label, l, r) => Node(f(label), l.map(f), r.map(f))
     }
-
+    //  @tailrec
     def foldPreOrder[B](z: B)(f: (B, A) => B): B = self match {
       case Leaf(label) => f(z, label)
       case Node(label, l, r) =>
@@ -57,20 +60,76 @@ object Functions {
         f(rBranchResult, label)
     }
 
-//    override def toString: String = {
-//      val accStr = Seq[String]("")
-//      self match {
-//        case Leaf(label) => s"($label)"
-//        case Node(label, l, r) => {
-//
-//          val padding = "-".repeat(nodeStr);
-//          val rightStr = "right:" + padding + r + "\n"
-//
-//          val leftStr = "left:" + padding + l + "\n"
-//          nodeStr + rightStr + leftStr
-//        }
-//      }
-//    }
+    override def toString: String = {
+      def go(
+          acc: Seq[String],
+          selfPrefix: String,
+          childPrefix: String,
+          node: BinaryTree[A]
+      ): Seq[String] = {
+        node match {
+          case Leaf(l) => acc :+ s"$selfPrefix$l"
+          case Node(l, left, right) => {
+            Seq(s"$selfPrefix$l") ++
+              go(acc, s"$childPrefix|-- ", s"$childPrefix|   ", left) ++
+              go(acc, s"$childPrefix`-- ", s"$childPrefix    ", right)
+          }
+          case _ => acc
+        }
+
+      }
+
+      go(Seq[String](), "", "", self).mkString("\n")
+    }
+
+    def tailrecToString: String = {
+      @tailrec
+      def go(
+          acc: Seq[String],
+          stack: Seq[BinaryTree[A]],
+          selfPrefix: String,
+          childPrefix: String,
+          node: BinaryTree[A]
+      ): Seq[String] = {
+        node match {
+          case Leaf(l) => {
+            val newAcc = acc :+ s"$selfPrefix$l"
+            val newPrefix = childPrefix.dropRight(4)
+            val h = stack.head
+            h match {
+              case End => newAcc // done
+              case Node(_, _, _) =>
+                go(
+                  newAcc,
+                  stack.tail,
+                  s"$newPrefix`-- ",
+                  s"$newPrefix    ",
+                  h
+                )
+              case Leaf(_) =>
+                go(
+                  newAcc,
+                  stack.tail,
+                  s"$newPrefix`-- ",
+                  s"$newPrefix",
+                  h
+                )
+
+            }
+          }
+          case Node(l, left, right) => {
+            val newAcc = acc :+ s"$selfPrefix$l"
+            val newStack = right +: stack
+            go(newAcc, newStack, s"$childPrefix|-- ", s"$childPrefix|   ", left)
+          }
+          case _ => Seq("boom")
+        }
+
+      }
+
+      case object End extends BinaryTree[A] // empty stack flag
+      go(Seq[String](), Seq(End), "", "", self).mkString("\n")
+    }
   }
 
   final case class Leaf[A](label: A) extends BinaryTree[A]
@@ -81,32 +140,59 @@ object Functions {
   def test(): Unit = {
     println("Functions object")
 
-    val t1 = Node(3, Leaf(1), Node(2, Leaf(4), Leaf(5)))
+    val t1 = Node(
+      3,
+      Node(1, Node(21, Leaf(41), Leaf(51)), Leaf(222)),
+      Node(
+        2,
+        Node(4, Leaf(41), Leaf(42)),
+        Node(21, Node(221, Leaf(221), Leaf(251)), Leaf(2123))
+      )
+    )
     //     3
-    //   /  \
-    //  1    2
-    //     /  \
-    //    4    5
-    println(s"t1: $t1")
+    //   /   \
+    //  1      2
+    // / \    / \
+    //21 222 4   5
+    // \\     \\
+    // 41 51  41 42
+    println(t1)
+    println("---")
+    println(t1.tailrecToString)
+    //  3
+    //  |-- 1
+    //  |   |-- 21
+    //  |   |   |-- 41
+    //  |   |   `-- 51
+    //  |   `-- 222
+    //  `-- 2
+    //      |-- 4
+    //      |   |-- 41
+    //      |   `-- 42
+    //      `-- 21
+    //          |-- 221
+    //          |   |-- 221
+    //          |   `-- 251
+    //          `-- 2123
 
-    val t2 = t1.map(_ * 2)
-    //     6
-    //   /  \
-    //  1    4
-    //     /  \
-    //    8    10
-    println(s"t2: $t2")
-
-    val f1 = t1.foldPreOrder(List.empty[Int])((acc, x) => acc :+ x)
-    // List(3,1,2,4,5)
-    println(s"f1: $f1")
-
-    val f2 = t1.foldInOrder(List.empty[Int])((acc, x) => acc :+ x)
-    // List(1,3,4,2,5)
-    println(s"f2: $f2")
-
-    val f3 = t1.foldPostOrder(List.empty[Int])((acc, x) => acc :+ x)
-    // List(1,4,5,2,3)
-    println(s"f3: $f3")
+//    val t2 = t1.map(_ * 2)
+//    //     6
+//    //   /  \
+//    //  1    4
+//    //     /  \
+//    //    8    10
+//    println(s"t2: $t2")
+//
+//    val f1 = t1.foldPreOrder(List.empty[Int])((acc, x) => acc :+ x)
+//    // List(3,1,2,4,5)
+//    println(s"f1: $f1")
+//
+//    val f2 = t1.foldInOrder(List.empty[Int])((acc, x) => acc :+ x)
+//    // List(1,3,4,2,5)
+//    println(s"f2: $f2")
+//
+//    val f3 = t1.foldPostOrder(List.empty[Int])((acc, x) => acc :+ x)
+//    // List(1,4,5,2,3)
+//    println(s"f3: $f3")
   }
 }

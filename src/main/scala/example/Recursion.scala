@@ -282,6 +282,37 @@ object MoreRecursion {
     }
   }
 
+  object MyList {
+    def apply[A](as: A*): MyList[A] = if (as.isEmpty) Empty()
+    else Cons(as.head, apply(as.tail: _*))
+
+//    @tailrec
+    def foldRight[A, B](as: MyList[A], z: B)(f: (A, B) => B): B = as match {
+      case Empty()     => z
+      case Cons(x, xs) => f(x, foldRight(xs, z)(f))
+    }
+
+    def sum2(ns: MyList[Int]) = foldRight(ns, 0)((x, y) => x + y)
+    def product2(ns: MyList[Int]) = foldRight(ns, 1.0)(_ * _)
+    def length[A](ns: MyList[A]): Int = foldRight(ns, 0)((_, z) => z + 1)
+
+    @tailrec
+    def foldLeft[A, B](as: MyList[A], z: B)(f: (B, A) => B): B = as match {
+      case Empty()          => z
+      case Cons(head, tail) => foldLeft(tail, f(z, head))(f)
+    }
+
+    def sumL(ns: MyList[Int]) = foldLeft(ns, 0)((x, y) => x + y)
+    def productL(ns: MyList[Int]) = foldLeft(ns, 1.0)(_ * _)
+    def lengthL[A](ns: MyList[A]): Int = foldLeft(ns, 0)((z, _) => z + 1)
+
+    def reverse[A](ns: MyList[A]): MyList[A] =
+      foldLeft(ns, Empty(): MyList[A])((acc: MyList[A], el) => Cons(el, acc))
+
+    def append[A](a1: MyList[A], a2: MyList[A]): MyList[A] =
+      foldLeft(a1, a2)((acc, el) => Cons(el, acc))
+  }
+
   final case class Empty[A]() extends MyList[A]
   final case class Cons[A](head: A, tail: MyList[A]) extends MyList[A] {}
 
@@ -305,17 +336,35 @@ object MoreRecursion {
 
     val bigListDamn = getBigList(15)
 
-    println(s"oneElementList = $oneElementList")
-    println(s"twoElementList = $twoElementList")
-    println(s"mappedList + 1 = $mappedList")
-    println(s"filteredList > 10 = $filteredList")
+//    println(s"oneElementList = $oneElementList")
+//    println(s"twoElementList = $twoElementList")
+//    println(s"mappedList + 1 = $mappedList")
+//    println(s"filteredList > 10 = $filteredList")
     println(s"bigListDamn = $bigListDamn")
-    println(s"bigListDamn.length = ${bigListDamn.length}")
-    println(s"bigListDamn.filter(_ > 7) = ${bigListDamn.filter(_ > 7)}")
-    println(s"bigListDamn.take(10) = ${bigListDamn.take(10)}")
-    println(s"bigListDamn.drop(10) = ${bigListDamn.drop(10)}")
-    println(s"bigListDamn.dropWhile(_ < 7) = ${bigListDamn.dropWhile(_ < 7)}")
-    println(s"bigListDamn.takeWhile(_ < 7) = ${bigListDamn.takeWhile(_ < 7)}")
-    println(s"bigListDamn.init() = ${bigListDamn.init()}")
+//    println(s"bigListDamn.length = ${bigListDamn.length}")
+//    println(s"bigListDamn.filter(_ > 7) = ${bigListDamn.filter(_ > 7)}")
+//    println(s"bigListDamn.take(10) = ${bigListDamn.take(10)}")
+//    println(s"bigListDamn.drop(10) = ${bigListDamn.drop(10)}")
+//    println(s"bigListDamn.dropWhile(_ < 7) = ${bigListDamn.dropWhile(_ < 7)}")
+//    println(s"bigListDamn.takeWhile(_ < 7) = ${bigListDamn.takeWhile(_ < 7)}")
+//    println(s"bigListDamn.init() = ${bigListDamn.init()}")
+    println(MyList.sum2(bigListDamn))
+    println(MyList.product2(bigListDamn))
+    val y = MyList(1, 2, 3)
+    println(y)
+
+    val x = MyList.foldRight(MyList(3, 4, 5), Empty(): MyList[Int])(Cons(_, _))
+    println(x)
+
+    println(MyList.length(x))
+
+    println(MyList.sumL(bigListDamn))
+    println(MyList.productL(bigListDamn))
+    println(MyList.lengthL(x))
+
+    println(MyList.reverse(x))
+
+    println(MyList.append(x, y))
+
   }
 }

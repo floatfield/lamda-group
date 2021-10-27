@@ -248,6 +248,8 @@ object MoreRecursion {
         case Cons(h, t) => Cons(h, t.push(a))
       }
 
+    def :+(a: A): MyList[A] = push(a)
+
     def init(): MyList[A] = {
       @tailrec
       def loop(acc: MyList[A], l: MyList[A]): MyList[A] = {
@@ -280,6 +282,8 @@ object MoreRecursion {
         case Cons(head, tail) => loop(tail, "[" + head)
       }
     }
+
+    def foldLeft[B](z: B)(f: (B, A) => B): B = MyList.foldLeft(self, z)(f)
   }
 
   object MyList {
@@ -292,8 +296,31 @@ object MoreRecursion {
       case Cons(x, xs) => f(x, foldRight(xs, z)(f))
     }
 
-    def sum2(ns: MyList[Int]) = foldRight(ns, 0)((x, y) => x + y)
-    def product2(ns: MyList[Int]) = foldRight(ns, 1.0)(_ * _)
+    def sum2(ns: MyList[Int]): Int = foldRight(ns, 0)((x, y) => x + y)
+    def product2(ns: MyList[Double]): Double = foldRight(ns, 1.0)(_ * _)
+    def product2(ns: MyList[Int]): Int = foldRight(ns, 1)(_ * _)
+
+//    trait Productable[A] {
+//      def product(a: A, b: A): A
+//      def zero: A
+//    }
+//
+//    def product21[A: Productable](ns: MyList[A]): A = {
+//      val P = implicitly[Productable[A]]
+//      foldRight(ns, P.zero)(P.product)
+//    }
+//    def product22[A](ns: MyList[A])(implicit p: Productable[A]): A = {
+////      val P = implicitly[Productable[A]]
+//      foldRight(ns, p.zero)(p.product)
+//    }
+//
+//    implicit val doubleProd = new Productable[Double] {
+//      override def product(a: Double, b: Double): Double = a * b
+//      override def zero: Double = 1.0
+//    }
+//
+//    def doubleProduct(xs: MyList[Double]): Double = product22(xs)
+
     def length[A](ns: MyList[A]): Int = foldRight(ns, 0)((_, z) => z + 1)
 
     @tailrec
@@ -302,12 +329,21 @@ object MoreRecursion {
       case Cons(head, tail) => foldLeft(tail, f(z, head))(f)
     }
 
+    val xs: MyList[Int] = ???
+
+    foldLeft(xs, List.empty[Int]){ case (acc, x) => x +: acc}
+    foldRight(xs, List.empty[Int]){ case (x, acc) => x +: acc}
+
+    def flip[A, B, C](f: (A, B) => C): (B, A) => C = (b, a) => f(a, b)
+
+    def fl[A, B](as: MyList[A], z: B)(f: (B, A) => B): B = foldRight(as.reverse, z)(flip(f))
+
     def sumL(ns: MyList[Int]) = foldLeft(ns, 0)((x, y) => x + y)
     def productL(ns: MyList[Int]) = foldLeft(ns, 1.0)(_ * _)
     def lengthL[A](ns: MyList[A]): Int = foldLeft(ns, 0)((z, _) => z + 1)
 
     def reverse[A](ns: MyList[A]): MyList[A] =
-      foldLeft(ns, Empty(): MyList[A])((acc: MyList[A], el) => Cons(el, acc))
+      foldLeft(ns, Empty(): MyList[A])((acc, el) => Cons(el, acc))
 
     def append[A](a1: MyList[A], a2: MyList[A]): MyList[A] =
       foldLeft(a1, a2)((acc, el) => Cons(el, acc))

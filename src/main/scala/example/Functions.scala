@@ -6,7 +6,7 @@ import scala.annotation.tailrec
 // implement missing function implementations
 object Functions {
 
-  def curry[A, B, C](f: (A, B) => C): A => B => C = (a: A) => (b: B) => f(a, b)
+  def curry[A, B, C](f: (A, B) => C): A => B => C = (a: A) => (b: B) => f(a, b) // a => b => f(a, b)
   //  val sum = (a: Int, b: Int) => a + b
   //  val curriedSum = curry(sum)
   //  val cs1 = curriedSum(1) // what type does cs1 have? int -> int
@@ -30,18 +30,35 @@ object Functions {
    */
 
   // implement all methods of BinaryTree without tail recursion
-  sealed trait BinaryTree[A] { self =>
+  sealed trait BinaryTree[A] {
+    self =>
+
+//    def fold[B](f: (A, B, B)): B = ???
+    // t.fold {
+    //  case (label, left, right) => Node(label + 1, left, right)
+    //}
+
     def map[B](f: A => B): BinaryTree[B] = self match {
-      case Leaf(label)       => Leaf(f(label))
+      case Leaf(label) => Leaf(f(label))
       case Node(label, l, r) => Node(f(label), l.map(f), r.map(f))
     }
-    //  @tailrec
-    def foldPreOrder[B](z: B)(f: (B, A) => B): B = self match {
-      case Leaf(label) => f(z, label)
-      case Node(label, l, r) =>
-        val currentNodeResult = f(z, label)
-        val lBranchResult = l.foldPreOrder(currentNodeResult)(f)
-        r.foldPreOrder(lBranchResult)(f)
+
+    def foldPreOrder[B](z: B)(f: (B, A) => B): B = {
+      @tailrec
+      def loop(acc: B, nodes: List[BinaryTree[A]]): B = nodes.headOption match {
+        case Some(Leaf(label)) => loop(f(acc, label), nodes.tail)
+        case Some(Node(label, left, right)) => loop(f(acc, label), left +: right +: nodes.tail)
+        case None => acc
+      }
+
+      loop(z, List(self))
+      //      self match {
+      //        case Leaf(label) => f(z, label)
+      //        case Node(label, l, r) =>
+      //          val currentNodeResult = f(z, label)
+      //          val lBranchResult = l.foldPreOrder(currentNodeResult)(f)
+      //          r.foldPreOrder(lBranchResult)(f)
+      //      }
     }
 
     def foldInOrder[B](z: B)(f: (B, A) => B): B = self match {
@@ -62,11 +79,11 @@ object Functions {
 
     override def toString: String = {
       def go(
-          acc: Seq[String],
-          selfPrefix: String,
-          childPrefix: String,
-          node: BinaryTree[A]
-      ): Seq[String] = {
+              acc: Seq[String],
+              selfPrefix: String,
+              childPrefix: String,
+              node: BinaryTree[A]
+            ): Seq[String] = {
         node match {
           case Leaf(l) => acc :+ s"$selfPrefix$l"
           case Node(l, left, right) => {
@@ -85,20 +102,18 @@ object Functions {
     def tailrecToString: String = {
       @tailrec
       def go(
-          acc: Seq[String],
-          stack: Seq[BinaryTree[A]],
-          selfPrefix: String,
-          childPrefix: String,
-          node: BinaryTree[A]
-      ): Seq[String] = {
+              acc: Seq[String],
+              stack: Seq[BinaryTree[A]],
+              selfPrefix: String,
+              childPrefix: String,
+              node: BinaryTree[A]
+            ): Seq[String] = {
         node match {
-          case Leaf(l) => {
+          case Leaf(l) =>
             val newAcc = acc :+ s"$selfPrefix$l"
             val newPrefix = childPrefix.dropRight(4)
-            val h = stack.head
-            h match {
-              case End => newAcc // done
-              case Node(_, _, _) =>
+            stack.headOption match {
+              case Some(h@Node(_, _, _)) =>
                 go(
                   newAcc,
                   stack.tail,
@@ -106,7 +121,7 @@ object Functions {
                   s"$newPrefix    ",
                   h
                 )
-              case Leaf(_) =>
+              case Some(h@Leaf(_)) =>
                 go(
                   newAcc,
                   stack.tail,
@@ -114,28 +129,34 @@ object Functions {
                   s"$newPrefix",
                   h
                 )
-
+              case None => newAcc
             }
-          }
-          case Node(l, left, right) => {
+          case Node(l, left, right) =>
             val newAcc = acc :+ s"$selfPrefix$l"
             val newStack = right +: stack
             go(newAcc, newStack, s"$childPrefix|-- ", s"$childPrefix|   ", left)
-          }
-          case _ => Seq("boom")
         }
 
       }
 
-      case object End extends BinaryTree[A] // empty stack flag
-      go(Seq[String](), Seq(End), "", "", self).mkString("\n")
+      go(Seq[String](), Seq.empty[BinaryTree[A]], "", "", self).mkString("\n")
+    }
+
+    def depth: Int = {
+      def loop(acc: Int, node: BinaryTree[A], currentDepth: Int): Int =
+        node match {
+          case Leaf(_) => Math.max(currentDepth, acc)
+          case Node(_, l, r) => loop(loop(acc, l, currentDepth + 1), r, currentDepth + 1)
+        }
+
+      loop(0, self, 0)
     }
   }
 
   final case class Leaf[A](label: A) extends BinaryTree[A]
 
   final case class Node[A](label: A, left: BinaryTree[A], right: BinaryTree[A])
-      extends BinaryTree[A]
+    extends BinaryTree[A]
 
   def test(): Unit = {
     println("Functions object")
@@ -156,8 +177,8 @@ object Functions {
     //21 222 4   5
     // \\     \\
     // 41 51  41 42
-    println(t1)
-    println("---")
+    //    println(t1)
+    //    println("---")
     println(t1.tailrecToString)
     //  3
     //  |-- 1
@@ -175,24 +196,25 @@ object Functions {
     //          |   `-- 251
     //          `-- 2123
 
-//    val t2 = t1.map(_ * 2)
-//    //     6
-//    //   /  \
-//    //  1    4
-//    //     /  \
-//    //    8    10
-//    println(s"t2: $t2")
-//
-//    val f1 = t1.foldPreOrder(List.empty[Int])((acc, x) => acc :+ x)
-//    // List(3,1,2,4,5)
-//    println(s"f1: $f1")
-//
-//    val f2 = t1.foldInOrder(List.empty[Int])((acc, x) => acc :+ x)
-//    // List(1,3,4,2,5)
-//    println(s"f2: $f2")
-//
-//    val f3 = t1.foldPostOrder(List.empty[Int])((acc, x) => acc :+ x)
-//    // List(1,4,5,2,3)
-//    println(s"f3: $f3")
+    //    val t2 = t1.map(_ * 2)
+    //    //     6
+    //    //   /  \
+    //    //  1    4
+    //    //     /  \
+    //    //    8    10
+    //    println(s"t2: $t2")
+    //
+    val f1 = t1.foldPreOrder(List.empty[Int])((acc, x) => acc :+ x)
+    // List(3,1,2,4,5)
+    println(s"f1: $f1")
+    //
+    val f2 = t1.foldInOrder(List.empty[Int])((acc, x) => acc :+ x)
+    //    // List(1,3,4,2,5)
+    println(s"f2: $f2")
+    //
+    val f3 = t1.foldPostOrder(List.empty[Int])((acc, x) => acc :+ x)
+    //    // List(1,4,5,2,3)
+    println(s"f3: $f3")
+    println(s"t1.depth: ${t1.depth}")
   }
 }

@@ -203,4 +203,18 @@ object types {
   // characters, different classes of items, and character stats.
   //
   type GameWorld = ???
+
+  private case class Email(value: String)
+
+  object Email {
+    private def validateEmail(s: String): Boolean = ???
+    def fromString(s: String): Option[Email] = {
+      if(validateEmail(s)) Some(Email(s)) else None
+    }
+  }
+
+  val e1 = Email.fromString("foo")
+
+  val e2 = Email.fromString("foo@example.oerg")
+
 }

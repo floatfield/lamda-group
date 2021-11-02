@@ -12,5 +12,6 @@ object Hello extends App {
 //
 //  MoreRecursion.test()
 //  import types._
-  Functions.test()
+//  Functions.test()
+  types.test()
 }

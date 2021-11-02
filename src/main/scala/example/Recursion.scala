@@ -338,15 +338,15 @@ object MoreRecursion {
 
     def fl[A, B](as: MyList[A], z: B)(f: (B, A) => B): B = foldRight(as.reverse, z)(flip(f))
 
-    def sumL(ns: MyList[Int]) = foldLeft(ns, 0)((x, y) => x + y)
-    def productL(ns: MyList[Int]) = foldLeft(ns, 1.0)(_ * _)
-    def lengthL[A](ns: MyList[A]): Int = foldLeft(ns, 0)((z, _) => z + 1)
+    def sumL(ns: MyList[Int]) = fl(ns, 0)((x, y) => x + y)
+    def productL(ns: MyList[Int]) = fl(ns, 1.0)(_ * _)
+    def lengthL[A](ns: MyList[A]): Int = fl(ns, 0)((z, _) => z + 1)
 
     def reverse[A](ns: MyList[A]): MyList[A] =
-      foldLeft(ns, Empty(): MyList[A])((acc, el) => Cons(el, acc))
+      fl(ns, Empty(): MyList[A])((acc, el) => Cons(el, acc))
 
     def append[A](a1: MyList[A], a2: MyList[A]): MyList[A] =
-      foldLeft(a1, a2)((acc, el) => Cons(el, acc))
+      fl(a1, a2)((acc, el) => Cons(el, acc))
   }
 
   final case class Empty[A]() extends MyList[A]

@@ -1,5 +1,7 @@
 package example
 
+import java.util.Date
+
 // borrowed from https://github.com/jdegoes/functional-scala
 object types {
   type ??? = Nothing
@@ -160,8 +162,16 @@ object types {
   // Create either a sum type or a product type (as appropriate) to represent an
   // employee at a company, which has a title, salary, name, and employment date.
   //
-  type Employee = ???
+//  type Employee = (String, Int, String, Long)
 
+  // what if we need more parameters ? extends ? is there js like objects ? structural types from scala 3
+  case class Employee2(
+      title: String,
+      salary: Int,
+      name: String,
+      employmentDate: Long
+  )
+  val a = Employee2("title-asd", 111, "John", 1970 * 111111)
   //
   // EXERCISE 17
   //
@@ -169,7 +179,13 @@ object types {
   // the rank of a piece on a chess board, which could be a pawn, rook, bishop,
   // knight, queen, or king.
   //
-  type ChessPieceRank = ???
+//  type ChessPieceRank = ???
+  sealed trait ChessPieceRank
+  final case object Pawn extends ChessPieceRank
+  final case object Rook extends ChessPieceRank
+  final case object Knight extends ChessPieceRank
+  final case object Queen extends ChessPieceRank
+  final case object King extends ChessPieceRank
 
   //
   // EXERCISE 18
@@ -179,7 +195,9 @@ object types {
   //
   sealed abstract case class Programmer private (level: Int)
   object Programmer {
-    def fromInt(level: Int): Option[Programmer] = ???
+    def fromInt(level: Int): Option[Programmer] =
+      //      why {} required after new ?
+      if (level > 0) Some(new Programmer(level) {}) else None
   }
 
   //
@@ -189,32 +207,121 @@ object types {
   // construct a `BankAccount` with an illegal (undefined) state in the
   // business domain. Note any limitations in your solution.
   //
-  final case class BankAccount(
+  final case class BankAccount private (
       ownerId: String,
       balance: BigDecimal,
       accountType: String,
       openedDate: Long
   )
 
+  object BankAccount {
+    def create(
+        ownerId: String,
+        balance: BigDecimal,
+        accountType: String,
+        openedDate: Long
+    ): Option[BankAccount] = {
+      if (
+        isValidOwnerId(ownerId) &&
+        isValidBalance(balance) &&
+        isValidAccountType(accountType) &&
+        isValidOpenedDate(openedDate)
+      )
+        Some(new BankAccount(ownerId, balance, accountType, openedDate))
+      else
+        None
+    }
+
+    // return Either with reason why it is invalid?
+    def isValidOwnerId(ownerId: String): Boolean = !doesOwnerIdExist(ownerId)
+
+    def isValidBalance(balance: BigDecimal): Boolean = balance >= 0
+
+    //case objects
+    def isValidAccountType(accountType: String): Boolean =
+      accountType == "existingType" || accountType == "anotherType"
+
+    def isValidOpenedDate(openedDate: Long): Boolean =
+      openedDate < 200 //java.time.Instant.now()
+
+    def doesOwnerIdExist(ownerId: String) = ownerId.length < 3
+  }
+
   //
   // EXERCISE 20
   //
   // Create an ADT model of a game world, including a map, a player, non-player
   // characters, different classes of items, and character stats.
-  //
-  type GameWorld = ???
 
-  private case class Email(value: String)
+//  what can be a primitive type? cortege, Int, Boolean ...
+//  type GameWorld = ???
+  final case class GameWorld(saveFile: SaveFile) {
+//  same as apply
+//    def init(saveFile: SaveFile): Unit = {
+//      this.NPC = NPC ?
+//    }
 
-  object Email {
-    private def validateEmail(s: String): Boolean = ???
-    def fromString(s: String): Option[Email] = {
-      if(validateEmail(s)) Some(Email(s)) else None
-    }
+    // is new required here ? should it be in companion object ?
+    def apply(saveFile: SaveFile): GameWorld = new GameWorld(saveFile)
+
   }
 
-  val e1 = Email.fromString("foo")
+  final case class SaveFile(player: Player, map: Map) {
+//    save all
+    def saveWorld(state: GameWorld): SaveFile = ???
+  }
 
-  val e2 = Email.fromString("foo@example.oerg")
+//  type Person or Entity ??? NPC, Player, Enemies, all have position for example
+//  final case class Entity(x: Int, y: Int)
 
+//  type NPC = ???
+//  quests: Map[Int, Boolean], store
+  final case class NPC() //extends Entity
+
+//  type Player = ???
+//  hp, setOfStats, items
+  case class Player()
+
+//  type PlayerStat = ???
+  sealed trait PlayerStat
+  final case object Strength extends PlayerStat
+  final case object Agility extends PlayerStat
+
+//  type Map = ???
+// listOfDynamicEntities ?
+// world stage ?
+// weather
+// should all of those be parameters ? no limit on the parameters length ?
+  case class Map()
+
+//  type Item = ???
+  sealed trait Item
+  sealed trait Weapon extends Item
+  // can we set some parameters here ?
+  sealed trait OneHandedWeapon extends Weapon
+  sealed trait OneHandedPhysicalWeapon extends OneHandedWeapon
+//  will name always grow like that, getting new specifiers
+  case class Sword(stats: WeaponStats) extends OneHandedPhysicalWeapon
+  //  parameters will encompass other parameters
+  case class WeaponStats()
+
+//  private case class Email(value: String)
+//
+//  object Email {
+//    private def validateEmail(s: String): Boolean = ???
+//    def fromString(s: String): Option[Email] = {
+//      if (validateEmail(s)) Some(Email(s)) else None
+//    }
+//  }
+//
+//  val e1 = Email.fromString("foo")
+//
+//  val e2 = Email.fromString("foo@example.oerg")
+  def test(): Unit = {
+    val valid = BankAccount.create("longer than 3", 0, "existingType", 100)
+    val invalid = BankAccount.create("2", -20, "nonExistingType", 200)
+    println(s"valid: $valid")
+    println(s"invalid: $invalid")
+
+  }
 }

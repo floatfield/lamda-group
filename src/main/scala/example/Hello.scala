@@ -10,8 +10,8 @@ object Hello extends App {
 //  println(Recursion.wordNumber(Int.MaxValue))
 //  println("---------------------")
 //
-//  MoreRecursion.test()
+  MoreRecursion.test()
 //  import types._
 //  Functions.test()
-  types.test()
+//  types.test()
 }

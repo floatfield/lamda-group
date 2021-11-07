@@ -179,13 +179,13 @@ object types {
   // the rank of a piece on a chess board, which could be a pawn, rook, bishop,
   // knight, queen, or king.
   //
-//  type ChessPieceRank = ???
-  sealed trait ChessPieceRank
-  final case object Pawn extends ChessPieceRank
-  final case object Rook extends ChessPieceRank
-  final case object Knight extends ChessPieceRank
-  final case object Queen extends ChessPieceRank
-  final case object King extends ChessPieceRank
+  type ChessPieceRank = ChessPieceRank1
+  sealed trait ChessPieceRank1
+  final case object Pawn extends ChessPieceRank1
+  final case object Rook extends ChessPieceRank1
+  final case object Knight extends ChessPieceRank1
+  final case object Queen extends ChessPieceRank1
+  final case object King extends ChessPieceRank1
 
   //
   // EXERCISE 18

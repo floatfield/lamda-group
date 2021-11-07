@@ -329,54 +329,146 @@ object MoreRecursion {
       case Cons(head, tail) => foldLeft(tail, f(z, head))(f)
     }
 
-    val xs: MyList[Int] = ???
-
-    foldLeft(xs, List.empty[Int]){ case (acc, x) => x +: acc}
-    foldRight(xs, List.empty[Int]){ case (x, acc) => x +: acc}
+//    val xs: MyList[Int] = ???
+//
+//    foldLeft(xs, List.empty[Int]){ case (acc, x) => x +: acc}
+//    foldRight(xs, List.empty[Int]){ case (x, acc) => x +: acc}
 
     def flip[A, B, C](f: (A, B) => C): (B, A) => C = (b, a) => f(a, b)
+    // 3.13 foldLeft in terms of foldRight
+    def fl[A, B](as: MyList[A], z: B)(f: (B, A) => B): B =
+      foldRight(as.reverse, z)(flip(f))
 
-    def fl[A, B](as: MyList[A], z: B)(f: (B, A) => B): B = foldRight(as.reverse, z)(flip(f))
+    // 3.13 foldRight in terms of foldLeft
+    def fr[A, B](as: MyList[A], z: B)(f: (A, B) => B): B =
+      foldLeft(as.reverse, z)(flip(f))
 
     def sumL(ns: MyList[Int]) = fl(ns, 0)((x, y) => x + y)
     def productL(ns: MyList[Int]) = fl(ns, 1.0)(_ * _)
     def lengthL[A](ns: MyList[A]): Int = fl(ns, 0)((z, _) => z + 1)
-
     def reverse[A](ns: MyList[A]): MyList[A] =
       fl(ns, Empty(): MyList[A])((acc, el) => Cons(el, acc))
 
-    def append[A](a1: MyList[A], a2: MyList[A]): MyList[A] =
-      fl(a1, a2)((acc, el) => Cons(el, acc))
+//    @tailrec
+    def append[A](a1: MyList[A], a2: MyList[A]): MyList[A] = {
+      a1 match {
+        case Empty()          => a2
+        case Cons(head, tail) => Cons(head, append(tail, a2))
+      }
+    }
+
+//     3.14 append in terms of either foldLeft or foldRight
+    def appendFr[A](a1: MyList[A], a2: MyList[A]): MyList[A] =
+      fr(a1, a2)((a, z) => Cons(a, z))
+
+    // 3.15
+    def flatten[A](as: MyList[MyList[A]]): MyList[A] =
+      fr(as, Empty(): MyList[A])(append)
+
+    // EXERCISE 3.16
+    // Write a function that transforms a list of integers by adding 1 to each element.
+    // (Reminder: this should be a pure function that returns a new List!)
+    def plus1(as: MyList[Int]): MyList[Int] = as.map(_ + 1)
+
+    // EXERCISE 3.17
+    // Write a function that turns each value in a List[Double] into a String. You can use
+    // the expression d.toString to convert some d: Double to a String.
+    def toString(as: MyList[Double]): MyList[String] = as.map(_.toString)
+
+    // EXERCISE 3.18
+    // Write a function map that generalizes modifying each element in a list while maintaining
+    // the structure of the list. Here is its signature:12
+    def map[A, B](as: MyList[A])(f: A => B): MyList[B] = as.map(f)
+
+    // EXERCISE 3.19
+    // Write a function filter that removes elements from a list unless they satisfy a given
+    // predicate. Use it to remove all odd numbers from a MyList[Int].
+    def filter[A](as: MyList[A])(f: A => Boolean): MyList[A] = as.filter(f)
+
+    // EXERCISE 3.20
+    // Write a function flatMap that works like map except that the function given will return
+    // a list instead of a single result, and that list should be inserted into the final resulting
+    // list. Here is its signature:
+    def flatMap[A, B](as: MyList[A])(f: A => MyList[B]): MyList[B] = flatten(
+      as.map(f)
+    )
+
+    // EXERCISE 3.21
+    // Use flatMap to implement filter.
+    def filterFm[A](as: MyList[A])(f: A => Boolean): MyList[A] =
+      flatMap(as)(a => if (f(a)) Empty() else MyList(a))
+
+    // EXERCISE 3.22
+    // Write a function that accepts two lists and constructs a new list by adding corresponding
+    // elements. For example, List(1,2,3) and List(4,5,6) become List(5,7,9).
+    def addLists(as: MyList[Int], bs: MyList[Int]): MyList[Int] = {
+      def loop(
+          as: MyList[Int],
+          bs: MyList[Int],
+          z: MyList[Int]
+      ): MyList[Int] = {
+        as match {
+          case Empty() =>
+            bs match {
+              case Empty()      => z
+              case Cons(bh, bt) => loop(Empty(), bt, bh +: z)
+            }
+          case Cons(ah, at) =>
+            bs match {
+              case Empty()      => loop(at, Empty(), ah +: z)
+              case Cons(bh, bt) => loop(at, bt, (ah + bh) +: z)
+            }
+        }
+      }
+
+      loop(as, bs, Empty(): MyList[Int]).reverse
+    }
+
+    // EXERCISE 3.23
+    // Generalize the function you just wrote so that it’s not specific to integers or addition.
+    // Name your generalized function zipWith.
+    def zipWith[A](as: MyList[A], bs: MyList[A]): MyList[A] = ???
+
+    // EXERCISE 3.24
+    // Hard: As an example, implement hasSubsequence for checking whether a List contains
+    // another List as a subsequence. For instance, List(1,2,3,4) would have
+    // List(1,2), List(2,3), and List(4) as subsequences, among others. You may have
+    // some difficulty finding a concise purely functional implementation that is also efficient.
+    // That’s okay. Implement the function however comes most naturally. We’ll
+    // return to this implementation in chapter 5 and hopefully improve on it. Note: Any
+    // two values x and y can be compared for equality in Scala using the expression x == y.
+    def hasSubsequence[A](sup: MyList[A], sub: MyList[A]): Boolean = ???
+
   }
 
   final case class Empty[A]() extends MyList[A]
   final case class Cons[A](head: A, tail: MyList[A]) extends MyList[A] {}
 
-  def test(): Unit = {
-    val oneElementList = 3 +: Empty[Int]() // Empty.+:(3) --> Cons(3, Empty())
-    val twoElementList =
-      10 +: oneElementList // Cons(3, Empty()).+:(10) --> Cons(10, Cons(3, Empty()))
-
-    val mappedList = twoElementList.map(_ + 1)
-    val filteredList = mappedList.filter(_ > 10)
-
-    def getBigList(size: Int): MyList[Int] = {
-      @tailrec
-      def loop(i: Int, acc: MyList[Int]): MyList[Int] = {
-        if (i >= size) acc
-        else loop(i + 1, scala.util.Random.nextInt(14) +: acc)
-      }
-
-      loop(0, Empty()).reverse
+  def getBigList(size: Int): MyList[Int] = {
+    @tailrec
+    def loop(i: Int, acc: MyList[Int]): MyList[Int] = {
+      if (i >= size) acc
+      else loop(i + 1, scala.util.Random.nextInt(14) +: acc)
     }
 
+    loop(0, Empty()).reverse
+  }
+
+  def test(): Unit = {
+//    val oneElementList = 3 +: Empty[Int]() // Empty.+:(3) --> Cons(3, Empty())
+//    val twoElementList =
+//      10 +: oneElementList // Cons(3, Empty()).+:(10) --> Cons(10, Cons(3, Empty()))
+//
+//    val mappedList = twoElementList.map(_ + 1)
+//    val filteredList = mappedList.filter(_ > 10)
+
     val bigListDamn = getBigList(15)
+    println(s"bigListDamn: $bigListDamn")
 
 //    println(s"oneElementList = $oneElementList")
 //    println(s"twoElementList = $twoElementList")
 //    println(s"mappedList + 1 = $mappedList")
 //    println(s"filteredList > 10 = $filteredList")
-    println(s"bigListDamn = $bigListDamn")
 //    println(s"bigListDamn.length = ${bigListDamn.length}")
 //    println(s"bigListDamn.filter(_ > 7) = ${bigListDamn.filter(_ > 7)}")
 //    println(s"bigListDamn.take(10) = ${bigListDamn.take(10)}")
@@ -384,23 +476,34 @@ object MoreRecursion {
 //    println(s"bigListDamn.dropWhile(_ < 7) = ${bigListDamn.dropWhile(_ < 7)}")
 //    println(s"bigListDamn.takeWhile(_ < 7) = ${bigListDamn.takeWhile(_ < 7)}")
 //    println(s"bigListDamn.init() = ${bigListDamn.init()}")
-    println(MyList.sum2(bigListDamn))
-    println(MyList.product2(bigListDamn))
+//    println(MyList.sum2(bigListDamn))
+//    println(MyList.product2(bigListDamn))
     val y = MyList(1, 2, 3)
-    println(y)
-
+    println(s"y: $y")
     val x = MyList.foldRight(MyList(3, 4, 5), Empty(): MyList[Int])(Cons(_, _))
-    println(x)
+    println(s"x: $x")
 
-    println(MyList.length(x))
+    println(s"x($x) + y($y)")
+    println(s"append: ${MyList.append(x, y)}")
+    println(s"appendFr: ${MyList.appendFr(x, y)}")
 
-    println(MyList.sumL(bigListDamn))
-    println(MyList.productL(bigListDamn))
-    println(MyList.lengthL(x))
+    val listOfLists = MyList(bigListDamn, Empty(): MyList[Int], y, x)
+    println(s"listOfLists: $listOfLists")
 
-    println(MyList.reverse(x))
-
-    println(MyList.append(x, y))
+    println(s"flatten: ${MyList.flatten(listOfLists)}")
+//    println(MyList.length(x))
+//
+//    println(MyList.sumL(bigListDamn))
+//    println(MyList.productL(bigListDamn))
+//    println(MyList.lengthL(x))
+//
+    println(s"plus1(y): ${MyList.plus1(y)}")
+    println(
+      s"addLists: ${MyList.addLists(MyList(1, 2, 3), MyList(4, 5, 6))}"
+    )
+    println(s"")
+    println(s"")
+    println(s"")
 
   }
 }
